@@ -1,7 +1,7 @@
 'use client';
 
 import './globals.css';
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from '../context/CartContext';
 import Header from '../components/Header';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

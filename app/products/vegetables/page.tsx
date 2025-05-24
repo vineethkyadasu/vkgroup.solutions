@@ -1,8 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import { useCart } from '../../../context/CartContext';
 
 export default function VegetablesPage() {
+  const { addToCart } = useCart();
+
   const vegetables = [
     { name: 'Organic Tomatoes', price: '₹30/kg', image: '/images/tomatoes.jpg' },
     { name: 'Fresh Carrots', price: '₹40/kg', image: '/images/carrots.jpg' },
@@ -24,7 +27,12 @@ export default function VegetablesPage() {
             />
             <h2 className="text-xl font-semibold mt-4">{veg.name}</h2>
             <p className="text-green-700">{veg.price}</p>
-            <button className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
+            <button
+              onClick={() => addToCart(veg)}
+              className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Add to Cart
+            </button>
           </div>
         ))}
       </div>

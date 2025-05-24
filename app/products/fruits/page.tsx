@@ -1,8 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import { useCart } from '../../../context/CartContext'; // ✅ Correct 3-level path
 
 export default function FruitsPage() {
+  const { addToCart } = useCart(); // ✅ enables cart updates
+
   const fruits = [
     { name: 'Organic Mangoes', price: '₹150/kg', image: '/images/mango.jpg' },
     { name: 'Natural Bananas', price: '₹50/dozen', image: '/images/bananas.jpg' },
@@ -24,7 +27,12 @@ export default function FruitsPage() {
             />
             <h2 className="text-xl font-semibold mt-4">{fruit.name}</h2>
             <p className="text-green-700">{fruit.price}</p>
-            <button className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
+            <button
+              onClick={() => addToCart(fruit)} // ✅ connect to context
+              className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Add to Cart
+            </button>
           </div>
         ))}
       </div>

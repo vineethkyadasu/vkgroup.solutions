@@ -1,8 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import { useCart } from '../../../context/CartContext';
 
 export default function GrainsPage() {
+  const { addToCart } = useCart();
+
   const grains = [
     { name: 'Brown Rice', price: '₹60/kg', image: '/images/rice.jpg' },
     { name: 'Whole Wheat', price: '₹45/kg', image: '/images/wheat.jpg' },
@@ -24,7 +27,12 @@ export default function GrainsPage() {
             />
             <h2 className="text-xl font-semibold mt-4">{grain.name}</h2>
             <p className="text-green-700">{grain.price}</p>
-            <button className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add to Cart</button>
+            <button
+              onClick={() => addToCart(grain)}
+              className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Add to Cart
+            </button>
           </div>
         ))}
       </div>
