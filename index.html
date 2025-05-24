@@ -1,123 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VK Group Solutions</title>
-  <style>
-    /* Reset & base */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background-color: #000; color: #fff; line-height: 1.6; }
-    a { color: #FFBF00; text-decoration: none; }
-    img { max-width: 100%; display: block; }
-    /* Container */
-    .container { width: 90%; max-width: 1200px; margin: auto; }
+'use client';
 
-    /* Header */
-    header { background: #111; padding: 20px 0; }
-    .logo { font-size: 2rem; font-weight: bold; color: #FFBF00; }
-    nav ul { list-style: none; display: flex; gap: 20px; }
-    nav a:hover { opacity: 0.8; }
+import Link from "next/link";
 
-    /* Hero */
-    .hero {
-      padding: 100px 0;
-      text-align: center;
-      background: url('hero-bg.jpg') center/cover no-repeat;
+export default function HomePage() {
+  const items = [
+    {
+      title: "Vegetables",
+      href: "/products/vegetables",
+      desc: "Fresh, organic vegetables directly from farmers."
+    },
+    {
+      title: "Fruits",
+      href: "/products/fruits",
+      desc: "Juicy, chemical-free fruits grown naturally."
+    },
+    {
+      title: "Grains",
+      href: "/products/grains",
+      desc: "Healthy and wholesome grains sourced directly."
     }
-    .hero h1 { font-size: 3rem; margin-bottom: 20px; }
-    .hero p { font-size: 1.2rem; max-width: 700px; margin: auto; }
-    .btn { display: inline-block; margin-top: 20px; padding: 10px 30px; background: #FFBF00; color: #000; border-radius: 4px; font-weight: bold; }
+  ];
 
-    /* Services */
-    .services { padding: 60px 0; }
-    .services h2 { text-align: center; margin-bottom: 40px; font-size: 2.5rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-    .card { background: #111; padding: 20px; border-radius: 8px; }
-    .card h3 { margin-bottom: 10px; color: #FFBF00; }
+  return (
+    <div className="min-h-screen bg-green-50 p-6">
+      <header className="mb-10 text-center">
+        <h1 className="text-4xl font-bold text-green-800">Rythu Varadi</h1>
+        <p className="text-lg text-green-600 mt-2">
+          Organic Products Direct from Farmers to Your Doorstep
+        </p>
+      </header>
 
-    /* About */
-    .about { padding: 60px 0; display: flex; flex-wrap: wrap; gap: 40px; align-items: center; }
-    .about img { width: 100%; max-width: 400px; border-radius: 8px; }
-    .about-text { flex: 1; }
-
-    /* Footer */
-    footer { background: #111; padding: 20px 0; text-align: center; }
-    footer p { font-size: 0.9rem; }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="container flex" style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="logo">VK Group Solutions</div>
-      <nav>
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#services">Services</a></li>
-          <li><a href="#about">About Us</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((item) => (
+          <div key={item.title} className="bg-white rounded-xl shadow-md p-4">
+            <div className="w-full h-40 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
+              Image Placeholder
+            </div>
+            <h2 className="text-xl font-semibold mt-4">{item.title}</h2>
+            <p className="text-gray-600">{item.desc}</p>
+            <Link href={item.href}>
+              <div className="mt-4">
+                <div className="w-full bg-green-600 text-white py-2 rounded-md text-center hover:bg-green-700 cursor-pointer">
+                  Shop Now
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </section>
     </div>
-  </header>
-
-  <section class="hero" id="home">
-    <div class="container">
-      <h1>Your One-Stop Digital Services Partner</h1>
-      <p>At VK Group Solutions, we deliver cutting-edge digital solutions to help your business thrive online—from marketing automation to web development, social media management, and more.</p>
-      <a href="#services" class="btn">Explore Services</a>
-    </div>
-  </section>
-
-  <section class="services" id="services">
-    <div class="container">
-      <h2>Our Services</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Web Development</h3>
-          <p>Responsive, SEO-friendly websites and e-commerce platforms tailored to your needs.</p>
-        </div>
-        <div class="card">
-          <h3>Digital Marketing</h3>
-          <p>End-to-end marketing solutions including bulk WhatsApp campaigns, SEO, and paid ads.</p>
-        </div>
-        <div class="card">
-          <h3>Social Media Management</h3>
-          <p>Grow your presence on Facebook, Instagram, LinkedIn, and more with targeted content.</p>
-        </div>
-        <div class="card">
-          <h3>Graphic Design</h3>
-          <p>Eye-catching logos, banners, and promotional materials that resonate with your brand.</p>
-        </div>
-        <div class="card">
-          <h3>One-on-One Video Podcasting</h3>
-          <p>We offer professionally hosted podcast-style interviews for business owners, politicians, and influencers to share their message while seated in a studio setting—face-to-face with a host.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="about" id="about">
-    <div class="container">
-      <img src="team-photo.jpg" alt="Our Team" />
-      <div class="about-text">
-        <h2>About VK Group Solutions</h2>
-        <p>Founded in 2025, VK Group Solutions provides a comprehensive suite of digital services to businesses of all sizes. Our mission is to empower brands with innovative strategies and flawless execution.</p>
-        <p>We believe in transparency, creativity, and delivering measurable results. Let us help you navigate the digital landscape and achieve your business goals.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="services" id="contact">
-    <div class="container">
-      <h2>Contact Us</h2>
-      <p style="text-align:center;">Ready to start your digital journey? Reach out today:</p>
-      <p style="text-align:center;">Email: <a href="mailto:info@vkgroup.solutions">info@vkgroup.solutions</a> | Phone: +91-9177754434</p>
-    </div>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 VK Group Solutions. All Rights Reserved.</p>
-  </footer>
-</body>
-</html>
+  );
+}
