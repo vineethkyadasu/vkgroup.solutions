@@ -4,25 +4,26 @@ import { useEffect, useState } from 'react';
 import { db } from '../../../lib/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
+interface Order {
+  id: string;
+  items: { name: string; price: string }[];
+  customer?: { name: string; phone: string };
+  createdAt?: any;
+  status?: string;
+}
+
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setOrders(data);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      } finally {
-        setLoading(false);
-      }
+      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      const docs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Order[];
+      setOrders(docs);
     };
 
     fetchOrders();
@@ -30,32 +31,32 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-green-700 mb-4">Customer Orders</h1>
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : orders.length === 0 ? (
+      <h1 className="text-2xl font-bold text-green-800 mb-6">Customer Orders</h1>
+      {orders.length === 0 ? (
         <p>No orders found.</p>
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div
-              key={order.id}
-              className="border p-4 rounded-lg shadow-sm bg-white"
-            >
-              <h2 className="font-semibold mb-2">Order ID: {order.id}</h2>
-              <ul className="list-disc list-inside text-sm text-gray-700 mb-2">
-                {order.items.map((item: any, idx: number) => (
-                  <li key={idx}>
-                    {item.name} — {item.price}
-                  </li>
+            <div key={order.id} className="border p-4 rounded shadow-sm bg-white">
+              <p className="text-gray-600 text-sm mb-1">Order ID: {order.id}</p>
+              {order.customer && (
+                <p className="text-green-700 font-medium mb-1">
+                  👤 {order.customer.name} 📞 {order.customer.phone}
+                </p>
+              )}
+              <div className="space-y-1">
+                {order.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span>{item.name}</span>
+                    <span>{item.price}</span>
+                  </div>
                 ))}
-              </ul>
-              <p className="text-xs text-gray-500">
-                Status: {order.status} |{' '}
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Status: {order.status || 'pending'} |{' '}
                 {order.createdAt?.toDate
-                  ? order.createdAt.toDate().toLocaleString()
-                  : 'No Date'}
+                  ? new Date(order.createdAt.toDate()).toLocaleString()
+                  : '—'}
               </p>
             </div>
           ))}
