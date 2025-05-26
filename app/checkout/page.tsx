@@ -4,6 +4,7 @@ import { useCart } from '../../context/CartContext';
 import { db } from '../../lib/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCart();
@@ -11,6 +12,7 @@ export default function CheckoutPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const router = useRouter();
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) {
@@ -26,7 +28,7 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      await addDoc(collection(db, 'orders'), {
+      const docRef = await addDoc(collection(db, 'orders'), {
         items,
         customer: {
           name,
@@ -36,11 +38,12 @@ export default function CheckoutPage() {
         createdAt: Timestamp.now(),
         status: 'pending',
       });
+
       clearCart();
-      alert('✅ Order placed successfully!');
       setName('');
       setPhone('');
       setAddress('');
+      router.push(`/orders/${docRef.id}`);
     } catch (error) {
       console.error('Order error:', error);
       alert('❌ Failed to place order. Try again.');
