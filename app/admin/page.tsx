@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 
 export default function AdminUploadPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,35 +14,32 @@ export default function AdminUploadPage() {
     image: ''
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const user = formData.get('username');
-    const pass = formData.get('password');
-    if (user === 'admin' && pass === '1234') {
-      setIsAuthenticated(true);
-    } else {
-      alert('Invalid credentials');
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      alert(`Login failed: ${error.message}`);
     }
   };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const collectionRef = collection(db, form.category);
-
-      // 🔍 Check for duplicate product name in the selected category
-      const q = query(collectionRef, where('name', '==', form.name));
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        alert('❌ Product with this name already exists in this category!');
-        return;
-      }
-
-      // ✅ Upload if no duplicate found
-      await addDoc(collectionRef, form);
+      await addDoc(collection(db, form.category), form);
       alert('✅ Product uploaded to Firebase!');
       setForm({ name: '', price: '', category: 'fruits', image: '' });
     } catch (error) {
@@ -56,9 +54,9 @@ export default function AdminUploadPage() {
         <h1 className="text-2xl font-bold text-green-700 mb-4">Admin Login</h1>
         <form onSubmit={handleLogin} className="space-y-4">
           <input
-            type="text"
-            name="username"
-            placeholder="Username"
+            type="email"
+            name="email"
+            placeholder="Email"
             className="w-full border px-4 py-2 rounded"
             required
           />
@@ -83,7 +81,7 @@ export default function AdminUploadPage() {
           type="text"
           name="name"
           placeholder="Product Name"
-          value={form.name || ''}
+          value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="w-full border px-4 py-2 rounded"
           required
@@ -92,14 +90,14 @@ export default function AdminUploadPage() {
           type="text"
           name="price"
           placeholder="Price (₹/kg or ₹/dozen)"
-          value={form.price || ''}
+          value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
           className="w-full border px-4 py-2 rounded"
           required
         />
         <select
           name="category"
-          value={form.category || 'fruits'}
+          value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="w-full border px-4 py-2 rounded"
           required
@@ -112,7 +110,7 @@ export default function AdminUploadPage() {
           type="text"
           name="image"
           placeholder="Image URL (e.g. /images/mango.jpg)"
-          value={form.image || ''}
+          value={form.image}
           onChange={(e) => setForm({ ...form, image: e.target.value })}
           className="w-full border px-4 py-2 rounded"
           required
