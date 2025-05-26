@@ -29,6 +29,13 @@ export default function Header() {
         >
           Checkout
         </Link>
+
+        <Link
+          href="/admin"
+          className="text-sm bg-white text-green-800 px-3 py-1 rounded hover:bg-green-100 border border-white"
+        >
+          Admin
+        </Link>
       </div>
     </header>
   );

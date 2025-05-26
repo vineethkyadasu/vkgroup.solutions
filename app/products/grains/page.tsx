@@ -1,34 +1,42 @@
 'use client';
 
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { db } from '../../../lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import { useCart } from '../../../context/CartContext';
+import Image from 'next/image';
 
 export default function GrainsPage() {
+  const [products, setProducts] = useState<any[]>([]);
   const { addToCart } = useCart();
 
-  const grains = [
-    { name: 'Brown Rice', price: '₹60/kg', image: '/images/rice.jpg' },
-    { name: 'Whole Wheat', price: '₹45/kg', image: '/images/wheat.jpg' },
-    { name: 'Millets Mix', price: '₹70/kg', image: '/images/millets.jpg' },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const snapshot = await getDocs(collection(db, 'grains'));
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProducts(items);
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-green-800 mb-6">Grains</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {grains.map((grain) => (
-          <div key={grain.name} className="bg-white p-4 shadow-md rounded-xl">
+        {products.map((product) => (
+          <div key={product.id} className="bg-white p-4 shadow-md rounded-xl">
             <Image
-              src={grain.image}
-              alt={grain.name}
+              src={product.image}
+              alt={product.name}
               width={400}
               height={300}
               className="rounded-xl"
             />
-            <h2 className="text-xl font-semibold mt-4">{grain.name}</h2>
-            <p className="text-green-700">{grain.price}</p>
+            <h2 className="text-xl font-semibold mt-4">{product.name}</h2>
+            <p className="text-green-700">₹{product.price}</p>
             <button
-              onClick={() => addToCart(grain)}
+              onClick={() => addToCart(product)}
               className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Add to Cart
