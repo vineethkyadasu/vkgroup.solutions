@@ -33,7 +33,6 @@ export default function CheckoutPage() {
         status: 'pending',
       });
       clearCart();
-      setOrderId(docRef.id);
       router.push(`/orders/${docRef.id}`);
     } catch (error) {
       console.error('Order error:', error);
