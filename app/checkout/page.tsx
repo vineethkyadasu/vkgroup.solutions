@@ -38,11 +38,7 @@ export default function CheckoutPage() {
         createdAt: Timestamp.now(),
         status: 'pending',
       });
-
       clearCart();
-      setName('');
-      setPhone('');
-      setAddress('');
       router.push(`/orders/${docRef.id}`);
     } catch (error) {
       console.error('Order error:', error);
