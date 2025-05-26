@@ -42,7 +42,7 @@ export default function Header() {
 
         {/* ✅ THIS IS THE ADMIN LINK */}
         <Link
-          href="/admin/orders"
+          href="/admin"
           className="text-sm underline hover:text-gray-300 ml-2"
         >
           Admin
