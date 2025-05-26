@@ -1,52 +1,74 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { db } from '../../../lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
+import { db } from '../../../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-const statusColors: Record<string, string> = {
-  pending: 'text-yellow-600',
-  confirmed: 'text-blue-600',
-  'in-transit': 'text-orange-600',
-  delivered: 'text-green-600',
-};
-
-export default function OrderDetailPage() {
+export default function OrderDetailsPage() {
   const { orderId } = useParams();
   const [order, setOrder] = useState<any>(null);
 
   useEffect(() => {
-    if (!orderId) return;
-    const unsub = onSnapshot(doc(db, 'orders', orderId as string), (snap) => {
-      setOrder(snap.data());
-    });
-    return () => unsub();
+    const fetchOrder = async () => {
+      const ref = doc(db, 'orders', orderId as string);
+      const snapshot = await getDoc(ref);
+      if (snapshot.exists()) {
+        setOrder(snapshot.data());
+      }
+    };
+    fetchOrder();
   }, [orderId]);
+
+  const formatDate = (timestamp: any) =>
+    timestamp?.toDate().toLocaleString('en-IN');
+
+  const groupItems = (items: any[]) => {
+    const grouped: { [key: string]: { name: string; price: string; qty: number } } = {};
+    for (const item of items) {
+      if (grouped[item.name]) {
+        grouped[item.name].qty += 1;
+      } else {
+        grouped[item.name] = { name: item.name, price: item.price, qty: 1 };
+      }
+    }
+    return Object.values(grouped);
+  };
+
+  const calculateTotal = (items: any[]) =>
+    items.reduce((acc, item) => acc + parseFloat(item.price) * item.qty, 0);
 
   if (!order) return <p className="p-6">Loading...</p>;
 
+  const groupedItems = groupItems(order.items);
+  const total = calculateTotal(groupedItems);
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-green-800">Order Details</h1>
+      <h1 className="text-2xl font-bold mb-4 text-green-700">Order Details</h1>
       <p><strong>Order ID:</strong> {orderId}</p>
-      <p><strong>Date:</strong> {new Date(order.createdAt.seconds * 1000).toLocaleString()}</p>
-      <p className={`mt-2 font-semibold ${statusColors[order.status]}`}>Status: {order.status}</p>
+      <p><strong>📅 Date:</strong> {formatDate(order.createdAt)}</p>
 
-      <hr className="my-4" />
+      {order.customer && (
+        <div className="my-4 space-y-1">
+          <p><strong>👤 Name:</strong> {order.customer.name}</p>
+          <p><strong>📞 Phone:</strong> {order.customer.phone}</p>
+          <p><strong>📍 Address:</strong> {order.customer.address}</p>
+        </div>
+      )}
 
-      {order.name && <p>👤 Name: {order.name}</p>}
-      {order.phone && <p>📞 Phone: {order.phone}</p>}
-      {order.address && <p>📍 Address: {order.address}</p>}
-
-      <hr className="my-4" />
-
-      <h2 className="font-bold mb-2">Items:</h2>
-      <ul className="list-disc pl-6">
-        {order.items.map((item: any, idx: number) => (
-          <li key={idx}>{item.name} — {item.price}</li>
+      <h2 className="text-xl font-semibold mt-6 mb-2">Items:</h2>
+      <ul className="space-y-2">
+        {groupedItems.map((item, i) => (
+          <li key={i}>
+            {item.name} (x{item.qty}) — ₹{parseFloat(item.price) * item.qty}
+          </li>
         ))}
       </ul>
+
+      <p className="font-bold mt-4">🧾 Total: ₹{total}</p>
+
+      <p className="mt-4 text-green-800 font-semibold">Status: {order.status}</p>
     </div>
   );
 }

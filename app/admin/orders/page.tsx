@@ -4,88 +4,112 @@ import { useEffect, useState } from 'react';
 import { db } from '../../../lib/firebase';
 import {
   collection,
-  doc,
+  getDocs,
   updateDoc,
-  onSnapshot,
+  doc,
+  Timestamp,
 } from 'firebase/firestore';
 
-const statusFlow = ['pending', 'confirmed', 'in-transit', 'delivered'];
+const STATUS_SEQUENCE = ['pending', 'confirmed', 'in-transit', 'delivered'];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'orders'), (snapshot) => {
-      const orderList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setOrders(orderList);
-    });
+  const fetchOrders = async () => {
+    const snapshot = await getDocs(collection(db, 'orders'));
+    const list = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setOrders(list);
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
-  const advanceStatus = async (orderId: string, currentStatus: string) => {
-    const currentIndex = statusFlow.indexOf(currentStatus);
-    const nextStatus = statusFlow[currentIndex + 1];
-
-    if (!nextStatus) {
-      alert('✅ Already delivered!');
-      return;
-    }
-
-    try {
-      await updateDoc(doc(db, 'orders', orderId), {
-        status: nextStatus,
-      });
-    } catch (err) {
-      console.error('Failed to update status:', err);
-      alert('❌ Could not update status');
+  const advanceStatus = async (id: string, currentStatus: string) => {
+    const index = STATUS_SEQUENCE.indexOf(currentStatus);
+    if (index < STATUS_SEQUENCE.length - 1) {
+      const nextStatus = STATUS_SEQUENCE[index + 1];
+      await updateDoc(doc(db, 'orders', id), { status: nextStatus });
+      fetchOrders();
     }
   };
 
+  const formatDate = (ts: Timestamp) =>
+    ts.toDate().toLocaleString('en-IN');
+
+  const groupItems = (items: any[]) => {
+    const grouped: { [key: string]: { name: string; price: string; qty: number } } = {};
+    for (const item of items) {
+      if (grouped[item.name]) {
+        grouped[item.name].qty += 1;
+      } else {
+        grouped[item.name] = { name: item.name, price: item.price, qty: 1 };
+      }
+    }
+    return Object.values(grouped);
+  };
+
+  const calculateTotal = (items: any[]) =>
+    items.reduce((acc, item) => acc + parseFloat(item.price) * item.qty, 0);
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-green-800 mb-6">Customer Orders</h1>
+      <h1 className="text-3xl font-bold mb-6 text-green-700">Customer Orders</h1>
 
       {orders.length === 0 ? (
         <p>No orders found.</p>
       ) : (
-        orders.map((order) => (
-          <div key={order.id} className="border p-4 rounded mb-4 shadow">
-            <p className="text-sm text-gray-500">Order ID: {order.id}</p>
-            <p className="text-sm text-gray-600">📅 {order.createdAt?.toDate?.().toLocaleString()}</p>
+        <div className="space-y-6">
+          {orders.map((order) => {
+            const groupedItems = groupItems(order.items);
+            const total = calculateTotal(groupedItems);
+            return (
+              <div key={order.id} className="border rounded-lg p-4 shadow">
+                <p className="text-sm text-gray-500">
+                  <strong>Order ID:</strong> {order.id}
+                </p>
+                <p className="text-sm text-gray-500">
+                  <strong>📅</strong> {formatDate(order.createdAt)}
+                </p>
 
-            {order.name && (
-              <p>👤 Name: {order.name}</p>
-            )}
-            {order.phone && (
-              <p>📞 Phone: {order.phone}</p>
-            )}
-            {order.address && (
-              <p>📍 Address: {order.address}</p>
-            )}
+                {order.customer && (
+                  <div className="my-2 text-sm space-y-1">
+                    <p><strong>👤 Name:</strong> {order.customer.name}</p>
+                    <p><strong>📞 Phone:</strong> {order.customer.phone}</p>
+                    <p><strong>📍 Address:</strong> {order.customer.address}</p>
+                  </div>
+                )}
 
-            <ul className="mt-2">
-              {order.items?.map((item: any, idx: number) => (
-                <li key={idx}>
-                  {item.name} — {item.price}
-                </li>
-              ))}
-            </ul>
+                <ul className="mt-2 space-y-1">
+                  {groupedItems.map((item, idx) => (
+                    <li key={idx}>
+                      {item.name} (x{item.qty}) — ₹{parseFloat(item.price) * item.qty}
+                    </li>
+                  ))}
+                </ul>
 
-            <div className="mt-2 flex items-center gap-4">
-              <p className="text-sm font-semibold">Status: {order.status}</p>
-              <button
-                onClick={() => advanceStatus(order.id, order.status)}
-                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-              >
-                Next Status
-              </button>
-            </div>
-          </div>
-        ))
+                <p className="mt-2 font-bold">🧾 Total: ₹{total}</p>
+
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-green-700 font-medium">
+                    Status: {order.status}
+                  </span>
+                  {order.status !== 'delivered' && (
+                    <button
+                      onClick={() => advanceStatus(order.id, order.status)}
+                      className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm"
+                    >
+                      Next Status
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
