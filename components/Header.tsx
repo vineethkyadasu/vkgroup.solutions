@@ -13,7 +13,16 @@ export default function Header() {
         Rythu Varadi
       </Link>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4">
+        <Link href="/products/fruits" className="hover:underline">
+          Fruits
+        </Link>
+        <Link href="/products/vegetables" className="hover:underline">
+          Vegetables
+        </Link>
+        <Link href="/products/grains" className="hover:underline">
+          Grains
+        </Link>
         <Link href="/cart" className="relative">
           <ShoppingCart className="w-6 h-6" />
           {items.length > 0 && (
@@ -22,17 +31,15 @@ export default function Header() {
             </span>
           )}
         </Link>
-
         <Link
           href="/checkout"
           className="bg-white text-green-700 px-3 py-1 rounded font-medium hover:bg-green-100"
         >
           Checkout
         </Link>
-
         <Link
-          href="/admin"
-          className="text-sm bg-white text-green-800 px-3 py-1 rounded hover:bg-green-100 border border-white"
+          href="/admin/orders"
+          className="text-sm underline hover:text-gray-300 ml-2"
         >
           Admin
         </Link>
