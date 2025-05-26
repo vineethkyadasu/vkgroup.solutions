@@ -13,7 +13,6 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [codAccepted, setCodAccepted] = useState(false);
-  const [orderId, setOrderId] = useState('');
   const router = useRouter();
 
   const totalAmount = items.reduce((sum, item) => sum + parseInt(item.price), 0);
