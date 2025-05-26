@@ -12,33 +12,28 @@ export default function CheckoutPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [codAccepted, setCodAccepted] = useState(false);
+  const [orderId, setOrderId] = useState('');
   const router = useRouter();
 
-  const handlePlaceOrder = async () => {
-    if (items.length === 0) {
-      alert('Your cart is empty');
-      return;
-    }
+  const totalAmount = items.reduce((sum, item) => sum + parseInt(item.price), 0);
 
-    if (!name || !phone || !address) {
-      alert('Please fill in all customer details.');
-      return;
-    }
+  const handlePlaceOrder = async () => {
+    if (items.length === 0) return alert('Your cart is empty');
+    if (!name || !phone || !address) return alert('Please fill in all customer details.');
+    if (!codAccepted) return alert('Please select Cash on Delivery to proceed.');
 
     setLoading(true);
 
     try {
       const docRef = await addDoc(collection(db, 'orders'), {
         items,
-        customer: {
-          name,
-          phone,
-          address,
-        },
+        customer: { name, phone, address },
         createdAt: Timestamp.now(),
         status: 'pending',
       });
       clearCart();
+      setOrderId(docRef.id);
       router.push(`/orders/${docRef.id}`);
     } catch (error) {
       console.error('Order error:', error);
@@ -58,14 +53,14 @@ export default function CheckoutPage() {
         <>
           <div className="space-y-4 mb-6">
             {items.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center border-b pb-2"
-              >
+              <div key={idx} className="flex justify-between items-center border-b pb-2">
                 <span>{item.name}</span>
-                <span>{item.price}</span>
+                <span>₹{item.price}</span>
               </div>
             ))}
+            <div className="text-right font-semibold text-green-800">
+              Total: ₹{totalAmount}
+            </div>
           </div>
 
           <div className="space-y-4 mb-6">
@@ -92,14 +87,24 @@ export default function CheckoutPage() {
               className="w-full border px-4 py-2 rounded"
               required
             />
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={codAccepted}
+                onChange={() => setCodAccepted(!codAccepted)}
+              />
+              <span>Cash on Delivery (COD)</span>
+            </label>
           </div>
 
           <button
             onClick={handlePlaceOrder}
-            disabled={loading}
-            className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+            disabled={loading || !codAccepted}
+            className={`w-full px-4 py-2 rounded text-white ${
+              codAccepted ? 'bg-green-700 hover:bg-green-800' : 'bg-gray-400 cursor-not-allowed'
+            }`}
           >
-            {loading ? 'Placing Order...' : 'Place Order (Cash on Delivery)'}
+            {loading ? 'Placing Order...' : 'Place Order'}
           </button>
         </>
       )}
