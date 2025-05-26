@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+} from 'firebase/auth';
 
 export default function AdminUploadPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,7 +15,7 @@ export default function AdminUploadPage() {
     name: '',
     price: '',
     category: 'fruits',
-    image: ''
+    image: '',
   });
 
   const auth = getAuth();
@@ -21,7 +25,7 @@ export default function AdminUploadPage() {
       setIsAuthenticated(!!user);
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +71,9 @@ export default function AdminUploadPage() {
             className="w-full border px-4 py-2 rounded"
             required
           />
-          <button className="bg-green-700 text-white px-4 py-2 rounded w-full">Login</button>
+          <button className="bg-green-700 text-white px-4 py-2 rounded w-full">
+            Login
+          </button>
         </form>
       </div>
     );
@@ -75,7 +81,20 @@ export default function AdminUploadPage() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-green-700 mb-4">Upload New Product</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-green-700">
+          Upload New Product
+        </h1>
+        <button
+          onClick={async () => {
+            await auth.signOut();
+            window.location.reload();
+          }}
+          className="text-sm text-red-600 underline"
+        >
+          Logout
+        </button>
+      </div>
       <form onSubmit={handleUpload} className="space-y-4">
         <input
           type="text"
@@ -115,7 +134,10 @@ export default function AdminUploadPage() {
           className="w-full border px-4 py-2 rounded"
           required
         />
-        <button type="submit" className="bg-green-700 text-white px-6 py-2 rounded">
+        <button
+          type="submit"
+          className="bg-green-700 text-white px-6 py-2 rounded"
+        >
           Upload Product
         </button>
       </form>
